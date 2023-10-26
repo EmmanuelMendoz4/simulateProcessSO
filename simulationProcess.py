@@ -90,7 +90,6 @@ class PlanificadorProcesos:
         tiempo_quantum = min(quantum, proceso_actual.tiempo_ejecucion)
         tiempo_respuesta += tiempo_total
         tiempo_finalizacion = tiempo_total + tiempo_quantum
-        tiempo_promedio += tiempo_finalizacion
         print(
             f"{proceso_actual.nombre:^7} | {proceso_actual.prioridad:^9} | {proceso_actual.tiempo_ejecucion:^20} | {tiempo_total:^18} | {tiempo_finalizacion:^21} | {tiempo_respuesta:^19}"
         )
@@ -99,9 +98,10 @@ class PlanificadorProcesos:
             tiempo_ejecucion=proceso_actual.tiempo_ejecucion - tiempo_quantum)
         if proceso_actual.tiempo_ejecucion > 0:
             cola.put(proceso_actual)
-    tiempo_promedio = tiempo_promedio / len(
-        self.procesos)
-    print(f"Tiempo promedio de respuesta: {tiempo_promedio}")
+        else:
+            tiempo_promedio += tiempo_finalizacion  # Solo suma el tiempo de finalización del proceso actual
+    tiempo_promedio = tiempo_promedio / len(self.procesos)  # Divide entre la cantidad de procesos
+    print(f"Tiempo promedio de finalización por proceso: {tiempo_promedio}")
 
 # ============================================================= #
 
