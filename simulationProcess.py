@@ -29,7 +29,7 @@ class PlanificadorProcesos:
     tiempo_promedio = 0
     print("Tabla de procesos (FIFO):")
     print(
-        "Proceso | Tiempo de Ejecución | Tiempo de Comienzo | Tiempo de Finalización | Tiempo de Respuesta"
+        "Proceso | Prioridad | Tiempo de Ejecución | Tiempo de Comienzo | Tiempo de Finalización | Tiempo de Respuesta"
     )
     for proceso in self.procesos:
       tiempo_quantum = proceso.tiempo_ejecucion
@@ -37,7 +37,7 @@ class PlanificadorProcesos:
       tiempo_finalizacion = tiempo_total + tiempo_quantum
       tiempo_promedio += tiempo_finalizacion  # Acumula el tiempo de finalización total
       print(
-          f"{proceso.nombre:^7}| {proceso.tiempo_ejecucion:^20} | {tiempo_total:^18} | {tiempo_finalizacion:^21}  | {tiempo_respuesta:^19}"
+          f"{proceso.nombre:^7}| {proceso.prioridad:^9} | {proceso.tiempo_ejecucion:^20} | {tiempo_total:^18} | {tiempo_finalizacion:^21}  | {tiempo_respuesta:^19}"
       )
       tiempo_total += tiempo_quantum
       proceso = proceso._replace(tiempo_ejecucion=proceso.tiempo_ejecucion - tiempo_quantum)
@@ -57,7 +57,7 @@ class PlanificadorProcesos:
     tiempo_promedio = 0
     print("Tabla de procesos (Shortest Job First - SJF):")
     print(
-        "Proceso | Tiempo de Ejecución | Tiempo de Comienzo | Tiempo de Finalización | Tiempo de Respuesta"
+        "Proceso | Prioridad | Tiempo de Ejecución | Tiempo de Comienzo | Tiempo de Finalización | Tiempo de Respuesta"
     )
     for proceso in procesos_ordenados:
       tiempo_quantum = proceso.tiempo_ejecucion
@@ -65,38 +65,45 @@ class PlanificadorProcesos:
       tiempo_finalizacion = tiempo_total + tiempo_quantum
       tiempo_promedio += tiempo_finalizacion
       print(
-          f"{proceso.nombre:^7} | {proceso.tiempo_ejecucion:^20} | {tiempo_total:^18} | {tiempo_finalizacion:^21} | {tiempo_respuesta:^19}"
+          f"{proceso.nombre:^7} | {proceso.prioridad:^9} | {proceso.tiempo_ejecucion:^20} | {tiempo_total:^18} | {tiempo_finalizacion:^21} | {tiempo_respuesta:^19}"
       )
       tiempo_total += tiempo_quantum
     tiempo_promedio = tiempo_promedio / len(
       self.procesos)
     print(f"Tiempo promedio de respuesta: {tiempo_promedio}")
 
+# ============================================================= #
+
   def round_robin(self, quantum):
     cola = Queue()
     for proceso in self.procesos:
-      cola.put(proceso)
+        cola.put(proceso)
     tiempo_total = 0
     tiempo_respuesta = 0
+    tiempo_promedio = 0
     print(f"Tabla de procesos (Round Robin con Quantum {quantum}):")
     print(
-        "Proceso | Tiempo de Ejecución | Tiempo de Comienzo | Tiempo de Finalización | Tiempo de Respuesta"
+        "Proceso | Prioridad | Tiempo de Ejecución | Tiempo de Comienzo | Tiempo de Finalización | Tiempo de Respuesta"
     )
     while not cola.empty():
-      proceso_actual = cola.get()
-      tiempo_ejecucion_actual = min(quantum, proceso_actual.tiempo_ejecucion)
-      tiempo_respuesta += tiempo_total
-      print(
-          f"{proceso_actual.nombre:^7} | {proceso_actual.tiempo_ejecucion:^20} | {tiempo_total:^18} | {tiempo_total + tiempo_ejecucion_actual:^21} | {tiempo_respuesta:^19}"
-      )
-      tiempo_total += tiempo_ejecucion_actual
-      proceso_actual = proceso_actual._replace(
-          tiempo_ejecucion=proceso_actual.tiempo_ejecucion -
-          tiempo_ejecucion_actual)
-      if proceso_actual.tiempo_ejecucion > 0:
-        cola.put(proceso_actual)
-    tiempo_respuesta /= len(self.procesos)
-    print(f"Tiempo promedio de respuesta: {tiempo_respuesta}")
+        proceso_actual = cola.get()
+        tiempo_quantum = min(quantum, proceso_actual.tiempo_ejecucion)
+        tiempo_respuesta += tiempo_total
+        tiempo_finalizacion = tiempo_total + tiempo_quantum
+        tiempo_promedio += tiempo_finalizacion
+        print(
+            f"{proceso_actual.nombre:^7} | {proceso_actual.prioridad:^9} | {proceso_actual.tiempo_ejecucion:^20} | {tiempo_total:^18} | {tiempo_finalizacion:^21} | {tiempo_respuesta:^19}"
+        )
+        tiempo_total += tiempo_quantum
+        proceso_actual = proceso_actual._replace(
+            tiempo_ejecucion=proceso_actual.tiempo_ejecucion - tiempo_quantum)
+        if proceso_actual.tiempo_ejecucion > 0:
+            cola.put(proceso_actual)
+    tiempo_promedio = tiempo_promedio / len(
+        self.procesos)
+    print(f"Tiempo promedio de respuesta: {tiempo_promedio}")
+
+# ============================================================= #
 
   def prioridad(self, quantum):
     # Ordena los procesos por su prioridad (mayor a menor)
@@ -106,7 +113,7 @@ class PlanificadorProcesos:
     print("Tabla de procesos (Prioridad):")
     print(f"\n Quantum: {quantum}")
     print(
-        "Proceso | Tiempo de Ejecución | Tiempo de Comienzo | Tiempo de Finalización | Tiempo de Respuesta"
+        "Proceso | Prioridad | Tiempo de Ejecución | Tiempo de Comienzo | Tiempo de Finalización | Tiempo de Respuesta"
     )
 
     tiempo_quantum = 0
@@ -115,7 +122,7 @@ class PlanificadorProcesos:
       
       if proceso.tiempo_ejecucion < quantum:
         print(
-            f"{proceso.nombre:^7}|{proceso.tiempo_ejecucion:^20}|{tiempo_total:^18}|{tiempo_total + tiempo_quantum:^21}|{tiempo_respuesta:^19}"
+            f"{proceso.nombre:^7}| {proceso.prioridad:^9} |{proceso.tiempo_ejecucion:^20}|{tiempo_total:^18}|{tiempo_total + tiempo_quantum:^21}|{tiempo_respuesta:^19}"
         )
 
       
@@ -123,12 +130,13 @@ class PlanificadorProcesos:
       tiempo_respuesta /= len(self.procesos)
     print(f"Tiempo promedio de respuesta: {tiempo_respuesta}")
 
+# ============================================================= #
 
 # Ejemplo de uso con los datos proporcionados
 procesos = [
     Proceso("A", 7, 4),
     Proceso("B", 6, 1),
-    Proceso("C", 6, 5),
+    Proceso("C", 3, 5),
     Proceso("D", 9, 2),
     Proceso("E", 10, 3)
 ]
